@@ -20,14 +20,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QObject, SIGNAL
+from PyQt4.QtGui import QAction, QIcon, QMessageBox
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from label2attr_dialog import Label2AttrDialog
 import os.path
-
+from qgis.gui import QgsMapToolEmitPoint
 
 class Label2Attr:
     """QGIS Plugin Implementation."""
@@ -42,6 +42,7 @@ class Label2Attr:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.canvas = self.iface.mapCanvas()
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -69,6 +70,7 @@ class Label2Attr:
         self.labelLayer = None
         self.targetLayer = None
         self.targetColumn = None
+        self.clickTool = QgsMapToolEmitPoint(self.canvas)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -146,9 +148,7 @@ class Label2Attr:
             self.toolbar.addAction(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -157,10 +157,32 @@ class Label2Attr:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/Label2Attr/icon.png'
-        self.add_action(icon_path, text=self.tr(u'Label to Attribute'),
-            callback=self.run, parent=self.iface.mainWindow())
+        self.dlg = Label2AttrDialog()
+        icon = QIcon(':/plugins/Label2Attr/icon.png')
+        self.action = QAction(icon, self.tr(u'Label to Attribute Settings'), 
+            self.iface.mainWindow())
+        self.action.triggered.connect(self.run)
+        self.action.setEnabled(True)
+        self.toolbar.addAction(self.action)
+        self.iface.addPluginToMenu(self.menu, self.action)
+        icon1 = QIcon(':/plugins/Label2Attr/icon1.png')
+        self.action1 = QAction(icon1, self.tr(u'Label to Attribute'), 
+            self.iface.mainWindow())
+        self.action1.setCheckable(True)
+        self.action1.triggered.connect(self.assign)
+        self.action1.setEnabled(True)
+        self.toolbar.addAction(self.action1)
+        result = QObject.connect(self.clickTool,
+            SIGNAL("canvasClicked(const QgsPoint &, Qt::MouseButton)"),
+            self.handleMouseDown)
+        #self.add_action(icon_path, text=self.tr(u'Label to Attribute Settings'),
+        #    callback=self.run, parent=self.iface.mainWindow())
+        #self.add_action(icon1_path, text=self.tr(u'Label to Attribute'),
+        #    callback=self.assign, add_to_menu=False,
+        #    parent=self.iface.mainWindow())
 
+    def handleMouseDown(self, point, button):
+        QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s" % (str(point.x()),str(point.y())))
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -183,3 +205,7 @@ class Label2Attr:
         if result:
             # store parameters
             pass
+
+    def assign(self):
+        """ assign label to attribute """
+        self.canvas.setMapTool(self.clickTool)
