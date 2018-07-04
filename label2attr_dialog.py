@@ -41,6 +41,7 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         # connect target layer change to fill column names
+        self.LabelLayerCombo.currentIndexChanged.connect(self.fillCols0)
         self.TargetLayerCombo.currentIndexChanged.connect(self.fillCols)
 
     def showEvent(self, event):
@@ -49,6 +50,13 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
         self.LabelLayerCombo.addItems(myutils.getLayerNames([QGis.Point]))
         self.TargetLayerCombo.clear()
         self.TargetLayerCombo.addItems(myutils.getLayerNames([QGis.Line]))
+
+    def fillCols0(self):
+        self.LabelColumnCombo.clear()
+        lname = self.LabelLayerCombo.currentText()
+        if len(lname):
+            vlayer = myutils.getMapLayerByName(lname)
+            self.LabelColumnCombo.addItems(myutils.getFieldNames(vlayer))
 
     def fillCols(self):
         self.TargetColumnCombo.clear()

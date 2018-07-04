@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>166</height>
+    <width>382</width>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,9 @@
   <widget class="QDialogButtonBox" name="button_box">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>120</y>
-     <width>341</width>
+     <x>70</x>
+     <y>150</y>
+     <width>301</width>
      <height>32</height>
     </rect>
    </property>
@@ -45,7 +45,7 @@
   <widget class="QComboBox" name="LabelLayerCombo">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>140</x>
      <y>10</y>
      <width>231</width>
      <height>27</height>
@@ -56,8 +56,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>50</y>
-     <width>121</width>
+     <y>90</y>
+     <width>101</width>
      <height>17</height>
     </rect>
    </property>
@@ -68,8 +68,8 @@
   <widget class="QComboBox" name="TargetLayerCombo">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>40</y>
+     <x>140</x>
+     <y>80</y>
      <width>231</width>
      <height>27</height>
     </rect>
@@ -79,23 +79,46 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>80</y>
-     <width>161</width>
+     <y>120</y>
+     <width>111</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Target Layer Column:</string>
+    <string>Target Column:</string>
    </property>
   </widget>
   <widget class="QComboBox" name="TargetColumnCombo">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>70</y>
+     <x>140</x>
+     <y>110</y>
      <width>231</width>
      <height>27</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="LabelColumnCombo">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>40</y>
+     <width>231</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>111</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label Column:</string>
    </property>
   </widget>
  </widget>
