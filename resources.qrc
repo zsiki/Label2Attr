@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/plugins/Label2Attr" >
         <file>icon.png</file>
+        <file>icon1.png</file>
     </qresource>
 </RCC>
