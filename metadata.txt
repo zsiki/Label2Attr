@@ -1,0 +1,39 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Label to Attribute
+qgisMinimumVersion=2.0
+description=Assign a label to an other layer's attribute
+version=0.1
+author=Zoltan Siki
+email=siki1958@gmail.com
+
+about=If you have two layers, one of them is a point vector layer with label text and another vector layer, you can assign labels to and attribute colomn of a vector layer.
+
+tracker=https://github.com/zsiki/label2attr
+repository=https://github.com/zsiki/label2attr
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python,attribute, labeling
+
+homepage=https://github.com/zsiki/label2attr
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
