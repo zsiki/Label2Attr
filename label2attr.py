@@ -149,7 +149,7 @@ class Label2Attr:
             ind = tl.fieldNameIndex(self.targetColumn)
             #print attrs
             tl.dataProvider().changeAttributeValues({id: {ind: nearest[self.labelColumn]}})
-
+            QMessageBox.information(self.iface.mainWindow(), "Info", str(nearest[self.labelColumn]))
             #QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
 
 
