@@ -27,7 +27,9 @@ import resources
 # Import the code for the dialog
 from label2attr_dialog import Label2AttrDialog
 import os.path
+from qgis.core import QgsSpatialIndex, QgsRectangle, QgsFeatureRequest, QgsDistanceArea
 from qgis.gui import QgsMapToolEmitPoint
+import myutils
 
 class Label2Attr:
     """QGIS Plugin Implementation."""
@@ -72,6 +74,7 @@ class Label2Attr:
         self.targetLayer = None
         self.targetColumn = None
         self.clickTool = QgsMapToolEmitPoint(self.canvas)
+        self.tolerance = 5 # tolerance for click on point (map units)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -109,22 +112,55 @@ class Label2Attr:
         result = QObject.connect(self.clickTool,
             SIGNAL("canvasClicked(const QgsPoint &, Qt::MouseButton)"),
             self.handleMouseDown)
+        self.actions = [self.action, self.action1]
 
     def handleMouseDown(self, point, button):
         if button == 1:
-            QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(button)))
+            # get nearest point in label layer
+            ll = myutils.getMapLayerByName(self.labelLayer)
+            llIdx = QgsSpatialIndex(ll.getFeatures())
+            ids = llIdx.intersects(QgsRectangle(point.x() - self.tolerance,
+                point.y() - self.tolerance, point.x() + self.tolerance,
+                point.y() + self.tolerance))
+            if len(ids) == 0:
+                QMessageBox.warning(self.iface.mainWindow(),
+                    self.tr("Warning"), self.tr("Point not found"))
+                return
+            # find nearest
+            mindist = self.tolerance
+            nearest = None
+            d = QgsDistanceArea()
+            for id in ids:
+                request = QgsFeatureRequest().setFilterFid(id)
+                pFeature = ll.getFeatures(request).next()
+                dist = d.measureLine(pFeature.geometry().asPoint(), point)
+                if dist < mindist:
+                    mindist = dist
+                    nearest = pFeature
+            if nearest is None:
+                QMessageBox.warning(self.iface.mainWindow(),
+                    self.tr("Warning"), self.tr("Point not found"))
+                return
+            #print nearest[self.labelColumn] 
+            tl = myutils.getMapLayerByName(self.targetLayer)
+            target = tl.selectedFeatures()[0]
+            attrs = target.attributes()
+            id = target.id()
+            ind = tl.fieldNameIndex(self.targetColumn)
+            #print attrs
+            tl.dataProvider().changeAttributeValues({id: {ind: nearest[self.labelColumn]}})
+
+            #QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
 
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&Label to Attribute'),
-                action)
+                self.tr(u'&Label to Attribute'), action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
-
 
     def run(self):
         """Run method that performs all the real work"""
@@ -135,8 +171,46 @@ class Label2Attr:
         # See if OK was pressed
         if result:
             # store parameters
-            pass
+            w = self.dlg.LabelLayerCombo.currentText()
+            if len(w):
+                self.labelLayer = w
+            else:
+                self.labelLayer = None
+            w = self.dlg.LabelColumnCombo.currentText()
+            if len(w):
+                self.labelColumn = w
+            else:
+                self.labelColumn = None
+            w = self.dlg.TargetLayerCombo.currentText()
+            if len(w):
+                self.targetLayer = w
+            else:
+                self.targetLayer = None
+            w = self.dlg.TargetColumnCombo.currentText()
+            if len(w):
+                self.targetColumn = w
+            else:
+                self.targetColumn = None
+            w = self.dlg.ToleranceEdit.text()
+            if len(w):
+                self.tolerance = float(w)
+            else:
+                self.tolerance = None
 
     def assign(self):
-        """ assign label to attribute """
+        """ start click tool """
+        if self.labelLayer is None or self.labelColumn is None or \
+           self.targetLayer is None or self.targetColumn is None or \
+           myutils.getMapLayerByName(self.labelLayer) is None or \
+           myutils.getMapLayerByName(self.targetLayer) is None:
+            QMessageBox.warning(self.iface.mainWindow(),
+                self.tr("Warning"), self.tr("Please set config parameters!"))
+            return
+        # is there aselection in target?
+        tl = myutils.getMapLayerByName(self.targetLayer)
+        if tl.selectedFeatureCount() != 1:
+            QMessageBox.information(self.iface.mainWindow(),
+                self.tr("Warning"),
+                self.tr("Please select a single feature in target layer"))
+            return
         self.canvas.setMapTool(self.clickTool)
