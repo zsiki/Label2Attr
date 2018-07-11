@@ -49,7 +49,8 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
         self.LabelLayerCombo.clear()
         self.LabelLayerCombo.addItems(myutils.getLayerNames([QGis.Point]))
         self.TargetLayerCombo.clear()
-        self.TargetLayerCombo.addItems(myutils.getLayerNames([QGis.Line]))
+        self.TargetLayerCombo.addItems(myutils.getLayerNames(
+           [QGis.Line, QGis.Point, QGis.Polygon]))
 
     def fillCols0(self):
         self.LabelColumnCombo.clear()
