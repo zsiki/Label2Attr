@@ -38,17 +38,17 @@ LOCALES = en hu
 # translation
 SOURCES = \
 	__init__.py \
-	label2attr.py label2attr_dialog.py
+	label2attr.py label2attr_dialog.py myutils.py
 
 PLUGINNAME = Label2Attr
 
 PY_FILES = \
 	__init__.py \
-	label2attr.py label2attr_dialog.py
+	label2attr.py label2attr_dialog.py myutils.py
 
 UI_FILES = label2attr_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt icon.png icon1.png
 
 EXTRA_DIRS =
 
