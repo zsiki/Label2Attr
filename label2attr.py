@@ -27,7 +27,7 @@ import resources
 # Import the code for the dialog
 from label2attr_dialog import Label2AttrDialog
 import os.path
-from qgis.core import QgsSpatialIndex, QgsRectangle, QgsFeatureRequest, QgsDistanceArea
+from qgis.core import QgsSpatialIndex, QgsRectangle, QgsFeatureRequest, QgsDistanceArea, QgsProject
 from qgis.gui import QgsMapToolEmitPoint
 import myutils
 
@@ -74,7 +74,7 @@ class Label2Attr:
         self.targetLayer = None
         self.targetColumn = None
         self.clickTool = QgsMapToolEmitPoint(self.canvas)
-        self.tolerance = 5 # tolerance for click on point (map units)
+        self.tolerance = 1 # tolerance for click on point (map units)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -94,7 +94,7 @@ class Label2Attr:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        self.dlg = Label2AttrDialog()
+        self.dlg = Label2AttrDialog(self, None)
         icon = QIcon(':/plugins/Label2Attr/icon.png')
         self.action = QAction(icon, self.tr(u'Label to Attribute Settings'), 
             self.iface.mainWindow())
@@ -143,6 +143,10 @@ class Label2Attr:
                 return
             #print nearest[self.labelColumn] 
             tl = myutils.getMapLayerByName(self.targetLayer)
+            if len(tl.selectedFeatures()) != 1:
+                QMessageBox.warning(self.iface.mainWindow(), self.tr("Warning"),
+                    self.tr("Please select a single feature in target layer"))
+                return
             target = tl.selectedFeatures()[0]
             attrs = target.attributes()
             id = target.id()
@@ -171,31 +175,37 @@ class Label2Attr:
         # See if OK was pressed
         if result:
             # store parameters
+            proj = QgsProject.instance()
             w = self.dlg.LabelLayerCombo.currentText()
             if len(w):
                 self.labelLayer = w
             else:
                 self.labelLayer = None
+            proj.writeEntry("Label2Attr", "labelLayer", self.labelLayer)
             w = self.dlg.LabelColumnCombo.currentText()
             if len(w):
                 self.labelColumn = w
             else:
                 self.labelColumn = None
+            proj.writeEntry("Label2Attr", "labelColumn", self.labelColumn)
             w = self.dlg.TargetLayerCombo.currentText()
             if len(w):
                 self.targetLayer = w
             else:
                 self.targetLayer = None
+            proj.writeEntry("Label2Attr", "targetLayer", self.targetLayer)
             w = self.dlg.TargetColumnCombo.currentText()
             if len(w):
                 self.targetColumn = w
             else:
                 self.targetColumn = None
+            proj.writeEntry("Label2Attr", "targetColumn", self.targetColumn)
             w = self.dlg.ToleranceEdit.text()
             if len(w):
                 self.tolerance = float(w)
             else:
                 self.tolerance = None
+            proj.writeEntry("Label2Attr", "tolerance", float(self.tolerance))
 
     def assign(self):
         """ start click tool """

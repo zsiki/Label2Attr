@@ -22,18 +22,18 @@
 """
 
 import os
-from qgis.core import QGis
+from qgis.core import QGis, QgsProject
 from PyQt4 import QtGui, uic
 import myutils
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'label2attr_dialog_base.ui'))
 
-
 class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
+    def __init__(self, plugin, parent=None):
         """Constructor."""
         super(Label2AttrDialog, self).__init__(parent)
+        self.plugin = plugin
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
@@ -46,11 +46,30 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
 
     def showEvent(self, event):
         """ prepare combos """
+        proj = QgsProject.instance()
         self.LabelLayerCombo.clear()
         self.LabelLayerCombo.addItems(myutils.getLayerNames([QGis.Point]))
+        self.plugin.labelLayer = proj.readEntry("Label2Attr", "labelLayer", None)[0]
+        index = self.LabelLayerCombo.findText(self.plugin.labelLayer)
+        if index > -1:
+            self.LabelLayerCombo.setCurrentIndex(index)
+        self.plugin.labelColumn = proj.readEntry("Label2Attr", "labelColumn", None)[0]
+        index = self.LabelColumnCombo.findText(self.plugin.labelColumn)
+        if index > -1:
+            self.LabelColumnCombo.setCurrentIndex(index)
         self.TargetLayerCombo.clear()
         self.TargetLayerCombo.addItems(myutils.getLayerNames(
            [QGis.Line, QGis.Point, QGis.Polygon]))
+        self.plugin.targetLayer = proj.readEntry("Label2Attr", "targetLayer", None)[0]
+        index = self.TargetLayerCombo.findText(self.plugin.targetLayer)
+        if index > -1:
+            self.TargetLayerCombo.setCurrentIndex(index)
+        self.plugin.targetColumn = proj.readEntry("Label2Attr", "targetColumn", None)[0]
+        index = self.TargetColumnCombo.findText(self.plugin.targetColumn)
+        if index > -1:
+            self.TargetColumnCombo.setCurrentIndex(index)
+        self.plugin.tolerance = proj.readNumEntry("Label2Attr", "tolerance", 1)[0]
+        self.ToleranceEdit.setText(str(self.plugin.tolerance))
 
     def fillCols0(self):
         self.LabelColumnCombo.clear()
