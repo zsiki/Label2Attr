@@ -48,7 +48,8 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
         """ prepare combos """
         proj = QgsProject.instance()
         self.LabelLayerCombo.clear()
-        self.LabelLayerCombo.addItems(myutils.getLayerNames([QGis.Point]))
+        self.LabelLayerCombo.addItems(myutils.getVisibleLayerNames(
+            [QGis.Point], self.plugin.canvas))
         self.plugin.labelLayer = proj.readEntry("Label2Attr", "labelLayer", None)[0]
         index = self.LabelLayerCombo.findText(self.plugin.labelLayer)
         if index > -1:
@@ -58,8 +59,8 @@ class Label2AttrDialog(QtGui.QDialog, FORM_CLASS):
         if index > -1:
             self.LabelColumnCombo.setCurrentIndex(index)
         self.TargetLayerCombo.clear()
-        self.TargetLayerCombo.addItems(myutils.getLayerNames(
-           [QGis.Line, QGis.Point, QGis.Polygon]))
+        self.TargetLayerCombo.addItems(myutils.getVisibleLayerNames(
+           [QGis.Line, QGis.Point, QGis.Polygon], self.plugin.canvas))
         self.plugin.targetLayer = proj.readEntry("Label2Attr", "targetLayer", None)[0]
         index = self.TargetLayerCombo.findText(self.plugin.targetLayer)
         if index > -1:

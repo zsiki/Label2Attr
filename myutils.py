@@ -27,6 +27,27 @@ def getLayerNames(vTypes):
                     layerlist.append(unicode(layer.name()))
     return sorted(layerlist, cmp=locale.strcoll)
 
+def getVisibleLayerNames(vTypes, canvas):
+    """ Return list of names of visoble layers
+        vTypes - list of layer types allowed (e.g. QGis.Point, QGis.Line, QGis.Polygon or "all" or "raster")
+        canvas
+        return sorted list of layer names
+    """
+    layers = canvas.layers()
+    layerlist = []
+    if vTypes == "all":
+        for layer in layers:
+            layerlist.append(unicode(layer.name()))
+    else:
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer:
+                if layer.geometryType() in vTypes:
+                    layerlist.append(unicode(layer.name()))
+            elif layer.type() == QgsMapLayer.RasterLayer:
+                if "raster" in vTypes:
+                    layerlist.append(unicode(layer.name()))
+    return sorted(layerlist, cmp=locale.strcoll)
+
 def getFieldNames(layer, types = "All"):
     """ Return list of column names of layers """
     return sorted([field.name() for field in layer.pendingFields()
