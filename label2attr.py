@@ -20,16 +20,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QObject, SIGNAL
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt4.QtGui import QAction, QIcon, QMessageBox
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from label2attr_dialog import Label2AttrDialog
 import os.path
-from qgis.core import QgsSpatialIndex, QgsRectangle, QgsFeatureRequest, QgsDistanceArea, QgsProject
-from qgis.gui import QgsMapToolEmitPoint
+from qgis.core import QgsProject
 import myutils
+from label2attr_maptool import Label2AttrMapTool
 
 class Label2Attr:
     """QGIS Plugin Implementation."""
@@ -73,7 +73,6 @@ class Label2Attr:
         self.labelColumn = None
         self.targetLayer = None
         self.targetColumn = None
-        self.clickTool = QgsMapToolEmitPoint(self.canvas)
         self.tolerance = 1 # tolerance for click on point (map units)
 
     # noinspection PyMethodMayBeStatic
@@ -93,69 +92,27 @@ class Label2Attr:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
+        # toolbar button for dialog
         self.dlg = Label2AttrDialog(self, None)
         icon = QIcon(':/plugins/Label2Attr/icon.png')
         self.action = QAction(icon, self.tr(u'Label to Attribute Settings'), 
             self.iface.mainWindow())
         self.action.triggered.connect(self.run)
         self.action.setEnabled(True)
+        # tool button for label selection
+        self.clickTool = Label2AttrMapTool(self.iface.mapCanvas(), self)
         self.toolbar.addAction(self.action)
         self.iface.addPluginToMenu(self.menu, self.action)
+        # map tool button
         icon1 = QIcon(':/plugins/Label2Attr/icon1.png')
         self.action1 = QAction(icon1, self.tr(u'Label to Attribute'), 
             self.iface.mainWindow())
         self.action1.setCheckable(True)
-        self.action1.triggered.connect(self.assign)
         self.action1.setEnabled(True)
+        self.action1.triggered.connect(self.assign)
         self.toolbar.addAction(self.action1)
-        result = QObject.connect(self.clickTool,
-            SIGNAL("canvasClicked(const QgsPoint &, Qt::MouseButton)"),
-            self.handleMouseDown)
+        self.clickTool.setAction(self.action1)
         self.actions = [self.action, self.action1]
-
-    def handleMouseDown(self, point, button):
-        if button == 1:
-            # get nearest point in label layer
-            ll = myutils.getMapLayerByName(self.labelLayer)
-            llIdx = QgsSpatialIndex(ll.getFeatures())
-            ids = llIdx.intersects(QgsRectangle(point.x() - self.tolerance,
-                point.y() - self.tolerance, point.x() + self.tolerance,
-                point.y() + self.tolerance))
-            if len(ids) == 0:
-                QMessageBox.warning(self.iface.mainWindow(),
-                    self.tr("Warning"), self.tr("Point not found"))
-                return
-            # find nearest
-            mindist = self.tolerance
-            nearest = None
-            d = QgsDistanceArea()
-            for id in ids:
-                request = QgsFeatureRequest().setFilterFid(id)
-                pFeature = ll.getFeatures(request).next()
-                dist = d.measureLine(pFeature.geometry().asPoint(), point)
-                if dist < mindist:
-                    mindist = dist
-                    nearest = pFeature
-            if nearest is None:
-                QMessageBox.warning(self.iface.mainWindow(),
-                    self.tr("Warning"), self.tr("Point not found"))
-                return
-            #print nearest[self.labelColumn] 
-            tl = myutils.getMapLayerByName(self.targetLayer)
-            if len(tl.selectedFeatures()) != 1:
-                QMessageBox.warning(self.iface.mainWindow(), self.tr("Warning"),
-                    self.tr("Please select a single feature in target layer"))
-                return
-            target = tl.selectedFeatures()[0]
-            attrs = target.attributes()
-            id = target.id()
-            ind = tl.fieldNameIndex(self.targetColumn)
-            #print attrs
-            tl.dataProvider().changeAttributeValues({id: {ind: nearest[self.labelColumn]}})
-            QMessageBox.information(self.iface.mainWindow(), "Info", str(nearest[self.labelColumn]))
-            #QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -163,6 +120,9 @@ class Label2Attr:
             self.iface.removePluginMenu(
                 self.tr(u'&Label to Attribute'), action)
             self.iface.removeToolBarIcon(action)
+        # Unset the map tool in case it's set
+        self.canvas.unsetMapTool(self.clickTool)
+
         # remove the toolbar
         del self.toolbar
 
