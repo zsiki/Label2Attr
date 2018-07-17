@@ -141,31 +141,45 @@ class Label2Attr:
                 self.labelLayer = w
             else:
                 self.labelLayer = None
-            proj.writeEntry("Label2Attr", "labelLayer", self.labelLayer)
+            if proj.readEntry("Label2Attr", "labelLayer", None) != self.labelLayer:
+                proj.writeEntry("Label2Attr", "labelLayer", self.labelLayer)
+                proj.setDirty(True)
+
             w = self.dlg.LabelColumnCombo.currentText()
             if len(w):
                 self.labelColumn = w
             else:
                 self.labelColumn = None
-            proj.writeEntry("Label2Attr", "labelColumn", self.labelColumn)
+            if proj.readEntry("Label2Attr", "labelColumn", None) != self.labelColumn:
+                proj.writeEntry("Label2Attr", "labelColumn", self.labelColumn)
+                proj.setDirty(True)
+
             w = self.dlg.TargetLayerCombo.currentText()
             if len(w):
                 self.targetLayer = w
             else:
                 self.targetLayer = None
-            proj.writeEntry("Label2Attr", "targetLayer", self.targetLayer)
+            if proj.readEntry("Label2Attr", "targetLayer", None) != self.targetLayer:
+                proj.writeEntry("Label2Attr", "targetLayer", self.targetLayer)
+                proj.setDirty(True)
+
             w = self.dlg.TargetColumnCombo.currentText()
             if len(w):
                 self.targetColumn = w
             else:
                 self.targetColumn = None
-            proj.writeEntry("Label2Attr", "targetColumn", self.targetColumn)
+            if proj.readEntry("Label2Attr", "targetColumn", None) != self.targetColumn:
+                proj.writeEntry("Label2Attr", "targetColumn", self.targetColumn)
+                proj.setDirty(True)
+
             w = self.dlg.ToleranceEdit.text()
             if len(w):
                 self.tolerance = float(w)
             else:
                 self.tolerance = None
-            proj.writeEntry("Label2Attr", "tolerance", float(self.tolerance))
+            if proj.readNumEntry("Label2Attr", "tolerance", 1) != self.tolerance:
+                proj.writeEntry("Label2Attr", "tolerance", float(self.tolerance))
+                proj.setDirty(True)
 
     def assign(self):
         """ start click tool """
