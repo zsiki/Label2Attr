@@ -70,7 +70,7 @@ class Label2AttrMapTool(QgsMapTool):
             point.y() - self.plugin.tolerance, point.x() + self.plugin.tolerance,
             point.y() + self.plugin.tolerance))
         if len(ids) == 0:
-            QMessageBox.warning(self.iface.mainWindow(),
+            QMessageBox.warning(self.plugin.iface.mainWindow(),
                 self.tr("Warning"), self.tr("Point not found"))
             return
         # find nearest
@@ -85,21 +85,23 @@ class Label2AttrMapTool(QgsMapTool):
                 mindist = dist
                 nearest = pFeature
         if nearest is None:
-            QMessageBox.warning(self.iface.mainWindow(),
+            QMessageBox.warning(self.plugin.iface.mainWindow(),
                 self.tr("Warning"), self.tr("Point not found"))
             return
         #print nearest[self.labelColumn] 
         tl = myutils.getMapLayerByName(self.plugin.targetLayer)
         if len(tl.selectedFeatures()) != 1:
-            QMessageBox.warning(self.iface.mainWindow(), self.tr("Warning"),
+            QMessageBox.warning(self.plugin.iface.mainWindow(), self.tr("Warning"),
                 self.tr("Please select a single feature in target layer"))
             return
         target = tl.selectedFeatures()[0]
         attrs = target.attributes()
         id = target.id()
+        tl.startEditing()
         ind = tl.fieldNameIndex(self.plugin.targetColumn)
         #print attrs
         tl.dataProvider().changeAttributeValues({id: {ind: nearest[self.plugin.labelColumn]}})
-        QMessageBox.information(self.plugin.iface.mainWindow(), "Info", str(nearest[self.plugin.labelColumn]))
-        #QMessageBox.information(self.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
+        tl.commitChanges()
+        QMessageBox.information(self.plugin.iface.mainWindow(), "Info", nearest[self.plugin.labelColumn])
+        #QMessageBox.information(self.plugin.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
 
