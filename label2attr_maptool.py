@@ -95,13 +95,13 @@ class Label2AttrMapTool(QgsMapTool):
                 self.tr("Please select a single feature in target layer"))
             return
         target = tl.selectedFeatures()[0]
-        attrs = target.attributes()
-        id = target.id()
+        #attrs = target.attributes()
+        #print attrs
+        fid = target.id()
         tl.startEditing()
         ind = tl.fieldNameIndex(self.plugin.targetColumn)
-        #print attrs
-        tl.dataProvider().changeAttributeValues({id: {ind: nearest[self.plugin.labelColumn]}})
+        #tl.dataProvider().changeAttributeValues({fid: {ind: nearest[self.plugin.labelColumn]}}) #tihs does not update open data table
+        tl.changeAttributeValue(fid, ind, nearest[self.plugin.labelColumn])
         tl.commitChanges()
         QMessageBox.information(self.plugin.iface.mainWindow(), "Info", nearest[self.plugin.labelColumn])
         #QMessageBox.information(self.plugin.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
-
