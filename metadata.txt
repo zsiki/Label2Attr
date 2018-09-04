@@ -14,7 +14,7 @@ version=0.1
 author=Zoltan Siki
 email=siki1958@gmail.com
 
-about=If you have two layers, one of them is a point vector layer with label text and another vector layer, you can assign labels to and attribute colomn of a vector layer.
+about=If you have two layers, one of them is a point vector layer with label text and another vector layer, you can assign labels to an attribute column of a vector layer.
 
 tracker=https://github.com/zsiki/label2attr
 repository=https://github.com/zsiki/label2attr
