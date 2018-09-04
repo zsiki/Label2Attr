@@ -1,7 +1,7 @@
 Label2Attr 0.1
 ==============
 
-![icon](icon.png) ![icon](icon.png)
+![icon](icon.png) ![icon](icon1.png)
 
 This plug-in helps to copy data from points/label texts to the attribute table of another layer. It was planned to use for filling attribute table of sewer network comming from CAD drawings where data are in text entities.
 
