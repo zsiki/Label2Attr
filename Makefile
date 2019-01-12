@@ -3,7 +3,7 @@
 #
 # Assign a label to an other layer's attribute
 #							 -------------------
-#		begin				: 2018-07-04
+#		begin				: 2018-12-21
 #		git sha				: $Format:%H$
 #		copyright			: (C) 2018 by Zoltan Siki
 #		email				: siki1958@gmail.com
@@ -26,7 +26,7 @@
 #Add iso code for any locales you want to support here (space separated)
 # default is no locales
 # LOCALES = af
-LOCALES = en hu
+LOCALES =
 
 # If locales are enabled, set the name of the lrelease binary on your system. If
 # you have trouble compiling the translations, you may have to specify the full path to
@@ -38,17 +38,17 @@ LOCALES = en hu
 # translation
 SOURCES = \
 	__init__.py \
-	label2attr.py label2attr_dialog.py myutils.py
+	label2attr.py label2attr_dialog.py
 
-PLUGINNAME = Label2Attr
+PLUGINNAME = label2attr
 
 PY_FILES = \
 	__init__.py \
-	label2attr.py label2attr_dialog.py myutils.py
+	label2attr.py label2attr_dialog.py
 
 UI_FILES = label2attr_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png icon1.png
+EXTRAS = metadata.txt icon.png
 
 EXTRA_DIRS =
 
@@ -74,7 +74,7 @@ default: compile
 compile: $(COMPILED_RESOURCE_FILES)
 
 %.py : %.qrc $(RESOURCES_SRC)
-	pyrcc4 -o $*.py  $<
+	pyrcc5 -o $*.py  $<
 
 %.qm : %.ts
 	$(LRELEASE) $<
@@ -113,7 +113,7 @@ deploy: compile doc transcompile
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 	# Copy extra directories if any
-  # (temporarily removed)
+	(foreach EXTRA_DIR,(EXTRA_DIRS), cp -R (EXTRA_DIR) (HOME)/(QGISDIR)/python/plugins/(PLUGINNAME)/;)
 
 
 # The dclean target removes compiled python files from plugin directory

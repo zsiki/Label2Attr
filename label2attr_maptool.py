@@ -24,84 +24,85 @@ This tool button based on Lutra Consulting QGIS plugin NearestFeature
 """
 from qgis.gui import QgsMapTool
 from qgis.core import QgsMapToPixel, QgsFeatureRequest, QgsSpatialIndex, \
-    QgsRectangle, QgsDistanceArea
-from PyQt4.QtGui import QCursor, QMessageBox
-from PyQt4.QtCore import Qt
-import myutils
+    QgsRectangle, QgsDistanceArea, QgsProject, QgsFeature
+
+from PyQt5.QtGui import QCursor
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import Qt
 
 class Label2AttrMapTool(QgsMapTool):
-    
-    def __init__(self, canvas, plugin):
-        
-        super(QgsMapTool, self).__init__(canvas)
-        self.canvas = canvas
+    """ class for tool button """
+    def __init__(self, plugin):
+
+        super(Label2AttrMapTool, self).__init__(plugin.canvas)
+        #self.canvas = plugin.canvas
         self.cursor = QCursor(Qt.CrossCursor)
         self.plugin = plugin
-        
+
     def activate(self):
-        self.canvas.setCursor(self.cursor)
-    
+        """ set tool cursor """
+        self.plugin.canvas.setCursor(self.cursor)
+
     def screenToLayerCoords(self, screenPos, layer):
-        
-        transform = self.canvas.getCoordinateTransform()
-        canvasPoint = QgsMapToPixel.toMapCoordinates(transform, 
+        """ convert click position to CRS """
+        transform = self.plugin.canvas.getCoordinateTransform()
+        canvasPoint = QgsMapToPixel.toMapCoordinates(transform,
             screenPos.x(), screenPos.y())
-        
+
         # Transform if required
         layerEPSG = layer.crs().authid()
-        projectEPSG = self.canvas.mapRenderer().destinationCrs().authid()
+        projectEPSG = self.plugin.canvas.mapRenderer().destinationCrs().authid()
         if layerEPSG != projectEPSG:
-            renderer = self.canvas.mapRenderer()
-            layerPoint = renderer.mapToLayerCoordinates(layer, canvasPoint )
+            renderer = self.plugin.canvas.mapRenderer()
+            layerPoint = renderer.mapToLayerCoordinates(layer, canvasPoint)
         else:
             layerPoint = canvasPoint
         return layerPoint
 
     def canvasReleaseEvent(self, mouseEvent):
-        """ 
-        """
+        """ process click position """
         # get nearest point in label layer
-        ll = myutils.getMapLayerByName(self.plugin.labelLayer)
+        ll = QgsProject.instance().mapLayersByName(self.plugin.labelLayer)[0]
         # Determine the location of the click in real-world coords
-        point = self.toLayerCoordinates( ll, mouseEvent.pos() )
-
+        point = self.toLayerCoordinates(ll, mouseEvent.pos())
+        # find features in tolerance
         llIdx = QgsSpatialIndex(ll.getFeatures())
-        ids = llIdx.intersects(QgsRectangle(point.x() - self.plugin.tolerance,
-            point.y() - self.plugin.tolerance, point.x() + self.plugin.tolerance,
+        ids = llIdx.intersects(QgsRectangle(
+            point.x() - self.plugin.tolerance,
+            point.y() - self.plugin.tolerance,
+            point.x() + self.plugin.tolerance,
             point.y() + self.plugin.tolerance))
-        if len(ids) == 0:
+        if not ids:
             QMessageBox.warning(self.plugin.iface.mainWindow(),
                 self.tr("Warning"), self.tr("Point not found"))
             return
         # find nearest
+        pFeature = QgsFeature()
         mindist = self.plugin.tolerance
         nearest = None
         d = QgsDistanceArea()
-        for id in ids:
-            request = QgsFeatureRequest().setFilterFid(id)
-            pFeature = ll.getFeatures(request).next()
-            dist = d.measureLine(pFeature.geometry().asPoint(), point)
-            if dist < mindist:
-                mindist = dist
-                nearest = pFeature
+        for my_id in ids:
+            request = QgsFeatureRequest().setFilterFid(my_id)
+            if ll.getFeatures(request).nextFeature(pFeature):
+                dist = d.measureLine(pFeature.geometry().asPoint(), point)
+                if dist < mindist:
+                    mindist = dist
+                    nearest = pFeature
         if nearest is None:
             QMessageBox.warning(self.plugin.iface.mainWindow(),
                 self.tr("Warning"), self.tr("Point not found"))
             return
-        #print nearest[self.labelColumn] 
-        tl = myutils.getMapLayerByName(self.plugin.targetLayer)
+        tl = QgsProject.instance().mapLayersByName(self.plugin.targetLayer)[0]
         if len(tl.selectedFeatures()) != 1:
             QMessageBox.warning(self.plugin.iface.mainWindow(), self.tr("Warning"),
                 self.tr("Please select a single feature in target layer"))
             return
+        # update target attribute
         target = tl.selectedFeatures()[0]
-        #attrs = target.attributes()
-        #print attrs
         fid = target.id()
         tl.startEditing()
-        ind = tl.fieldNameIndex(self.plugin.targetColumn)
-        #tl.dataProvider().changeAttributeValues({fid: {ind: nearest[self.plugin.labelColumn]}}) #tihs does not update open data table
+        ind = tl.fields().indexFromName(self.plugin.targetColumn)
+        #tl.dataProvider().changeAttributeValues({fid: {ind: nearest[self.plugin.labelColumn]}}) #this does not update open data table
         tl.changeAttributeValue(fid, ind, nearest[self.plugin.labelColumn])
         tl.commitChanges()
         QMessageBox.information(self.plugin.iface.mainWindow(), "Info", nearest[self.plugin.labelColumn])
-        #QMessageBox.information(self.plugin.iface.mainWindow(),"Info", "X,Y = %s,%s B=%s" % (str(point.x()),str(point.y()), str(mindist)))
