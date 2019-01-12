@@ -1,12 +1,12 @@
-Label2Attr 0.1
+Label2Attr 1.0
 ==============
 
 ![icon](icon.png) ![icon](icon1.png)
 
 This plug-in helps to copy data from points/label texts to the attribute table of another layer. It was planned to use for filling attribute table of sewer network comming from CAD drawings where data are in text entities.
 
-The plug-in was tested with Shape files but it should work with other editable vector formats, too. It was tested on Ubuntu and Windows 10 with QGIS 2.14 and 2.18.
-This plug-in adds a toolbar and a menu option (into Plugins menu) to the QGIS user interface.
+The plug-in was tested with Shape files but it should work with other editable vector formats, too. It was tested on Ubuntu and Windows 10 with QGIS 3.4.
+This plug-in adds a toolbar and a menu option (into Vector menu) to the QGIS user interface.
 
 Usage
 -----
