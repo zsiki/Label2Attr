@@ -44,31 +44,34 @@ class Label2AttrDialog(QtWidgets.QDialog, FORM_CLASS):
         self.LabelLayerCombo.currentIndexChanged.connect(self.setPCols)
         self.TargetLayerCombo.currentIndexChanged.connect(self.setTCols)
 
+    def invisibleLayers(self):
+        """ returns list of invisible layers """
+        return list(set(QgsProject.instance().mapLayers().values()) -
+                   set((self.plugin.canvas.layers())))
+
     def showEvent(self, event):
         """ initialize dialog widgets """
 
         # filter point layers
         self.LabelLayerCombo.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.LabelLayerCombo.setExceptedLayerList(self.invisibleLayers())
         # set defaults from project variables
         proj = QgsProject.instance()
         self.plugin.labelLayer = proj.readEntry("Label2Attr", "labelLayer", None)[0]
-        print(self.plugin.labelLayer)
         index = self.LabelLayerCombo.findText(self.plugin.labelLayer)
         self.LabelLayerCombo.setCurrentIndex(index)
         self.plugin.labelColumn = proj.readEntry("Label2Attr", "labelColumn", None)[0]
-        print(self.plugin.labelColumn)
         index = self.LabelColumnCombo.findText(self.plugin.labelColumn)
         self.LabelColumnCombo.setCurrentIndex(index)
+        self.TargetLayerCombo.setFilters(QgsMapLayerProxyModel.HasGeometry)
+        self.TargetLayerCombo.setExceptedLayerList(self.invisibleLayers())
         self.plugin.targetLayer = proj.readEntry("Label2Attr", "targetLayer", None)[0]
-        print(self.plugin.targetLayer)
         index = self.TargetLayerCombo.findText(self.plugin.targetLayer)
         self.TargetLayerCombo.setCurrentIndex(index)
         self.plugin.targetColumn = proj.readEntry("Label2Attr", "targetColumn", None)[0]
-        print(self.plugin.targetColumn)
         index = self.TargetColumnCombo.findText(self.plugin.targetColumn)
         self.TargetColumnCombo.setCurrentIndex(index)
         self.plugin.tolerance = proj.readNumEntry("Label2Attr", "tolerance", 1)[0]
-        print(self.plugin.tolerance)
         self.ToleranceEdit.setText(str(self.plugin.tolerance))
 
     def setPCols(self):
