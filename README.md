@@ -15,11 +15,11 @@ You have to have a point layer and another vector layer in your actual project i
 
 Click on the first (L->A) icon the set up the configuration. In the dialog you have to set some parameters:
 
-+ Point Label Layer - select the name of your point layer you want to copy attribure from (only the visible layers are listed)
++ Point Label Layer - select the name of your point layer you want to copy attribure from (only the visible point layers are listed)
 + Label Column - select the attribute of the point layer to copy
 + Tolerance - the tolerance to find point when you click, it is in map units
-+ Target Layer - select the name of the targetvector layer you want the attribute copy to  (only the visible layers are listed)
-+ Target Column - select the attribute to to copy to
++ Target Layer - select the name of the target vector layer you want the attribute copy to  (only the visible vector layers are listed)
++ Target Column - select the attribute to copy to
 
 These setting are saved into the QGIS project, but you have to open this dialog after loading the project to fill the parameters from the project data.
 
