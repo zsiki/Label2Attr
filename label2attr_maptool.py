@@ -105,4 +105,4 @@ class Label2AttrMapTool(QgsMapTool):
         #tl.dataProvider().changeAttributeValues({fid: {ind: nearest[self.plugin.labelColumn]}}) #this does not update open data table
         tl.changeAttributeValue(fid, ind, nearest[self.plugin.labelColumn])
         tl.commitChanges()
-        QMessageBox.information(self.plugin.iface.mainWindow(), "Info", nearest[self.plugin.labelColumn])
+        QMessageBox.information(self.plugin.iface.mainWindow(), "Info", str(nearest[self.plugin.labelColumn]))
